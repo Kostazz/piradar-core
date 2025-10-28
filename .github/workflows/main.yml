@@ -1,0 +1,46 @@
+name: PiRadar Agent Runtime v3.0
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"  # každých 10 minut heartbeat job
+
+env:
+  AGENT_MANIFEST_PATH: manifest/piradar_core_agent_v3.0.xml
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate XML manifest
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 jq curl
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "manifest/piradar_core_agent_v3.0.xml"
+          tree = ET.parse(path)
+          root = tree.getroot()
+          if root.tag != "agent":
+              raise SystemExit("❌ Manifest syntax error: Root tag must be <agent>")
+          print("✅ Manifest syntax OK")
+          PY
+
+      - name: Fetch Bitget data
+        run: |
+          mkdir -p out
+          curl -s https://api.bitget.com/api/spot/v1/market/tickers \
+          | jq '{timestamp: now, data: [.data[] | select(.symbol=="BTCUSDT" or .symbol=="ETHUSDT" or .symbol=="SOLUSDT" or .symbol=="PIUSDT") ]}' \
+          > out/priceSnapshot.json
+          echo "✅ Saved live Bitget snapshot → out/priceSnapshot.json"
+
+      - name: Commit & push snapshot
+        run: |
+          git config user.name "PiRadar Agent"
+          git config user.email "agent@piradar"
+          git add out/priceSnapshot.json || true
+          git commit -m "Auto-update: Bitget snapshot [skip ci]" || true
+          git push
