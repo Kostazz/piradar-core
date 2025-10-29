@@ -1,9 +1,12 @@
-name: PiRadar Agent Runtime v3.0
+name: PiRadar Agent Runtime v3.1
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/10 * * * *"  # každých 10 minut heartbeat job
+    - cron: "*/10 * * * *"  # heartbeat každých 10 minut
+
+permissions:
+  contents: write
 
 env:
   AGENT_MANIFEST_PATH: manifest/piradar_core_agent_v3.0.xml
@@ -17,6 +20,7 @@ jobs:
 
       - name: Validate XML manifest
         run: |
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y python3 jq curl
           python3 - <<'PY'
@@ -25,22 +29,38 @@ jobs:
           tree = ET.parse(path)
           root = tree.getroot()
           if root.tag != "agent":
-              raise SystemExit("❌ Manifest syntax error: Root tag must be <agent>")
-          print("✅ Manifest syntax OK")
+              raise SystemExit("Manifest syntax error: Root tag must be <agent>")
+          print("Manifest syntax OK")
           PY
 
-      - name: Fetch Bitget data
+      - name: Fetch Bitget data (robust)
         run: |
-          mkdir -p out
-          curl -s https://api.bitget.com/api/spot/v1/market/tickers \
-          | jq '{timestamp: now, data: [.data[] | select(.symbol=="BTCUSDT" or .symbol=="ETHUSDT" or .symbol=="SOLUSDT" or .symbol=="PIUSDT") ]}' \
-          > out/priceSnapshot.json
-          echo "✅ Saved live Bitget snapshot → out/priceSnapshot.json"
+          set -euo pipefail
+          mkdir -p out public/feed
+          curl -fsS https://api.bitget.com/api/spot/v1/market/tickers -o out/raw.json || true
+          if [ -s out/raw.json ]; then
+            jq -e '{
+              timestamp: (now | todate),
+              data: ((.data // []) | map(select(.symbol=="BTCUSDT" or .symbol=="ETHUSDT" or .symbol=="SOLUSDT" or .symbol=="PIUSDT")))
+            }' out/raw.json > out/priceSnapshot.json
+          else
+            printf '{"timestamp":"%s","warning":"bitget_unreachable","data":[]}' \
+                   "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > out/priceSnapshot.json
+          fi
+          cp out/priceSnapshot.json public/feed/now.json
+          echo "Saved snapshot → out/priceSnapshot.json & public/feed/now.json"
 
-      - name: Commit & push snapshot
+      - name: Commit & push snapshot (only if changed)
         run: |
-          git config user.name "PiRadar Agent"
-          git config user.email "agent@piradar"
-          git add out/priceSnapshot.json || true
-          git commit -m "Auto-update: Bitget snapshot [skip ci]" || true
-          git push
+          set -euo pipefail
+          git config user.name  "PiRadar Agent"
+          git config user.email "agent@piradar.local"
+          git add out/priceSnapshot.json public/feed/now.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto-update: Bitget snapshot [skip ci]"
+            git push
+            echo "Snapshot committed & pushed."
+          else
+            echo "No changes to commit."
+          fi
+
