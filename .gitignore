@@ -1,0 +1,6 @@
+out/*
+public/feed/*
+!out/.keep
+!public/feed/.keep
+!out/priceSnapshot.json
+!public/feed/now.json

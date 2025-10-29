@@ -1,0 +1,14 @@
+<agent>
+  <meta>
+    <name>PiRadar Core Agent — Continuum Runtime (v3.0)</name>
+    <author>PiRadar Continuum / Konstantin Tunturov</author>
+    <language primary="en" secondary="cs"/>
+    <mission>Analyze BTC, ETH, SOL, PI from Bitget; produce reports/JSON feeds/visual prompts; keep PiRadar style.</mission>
+    <motto>To the point, but never without soul.</motto>
+  </meta>
+  <data>
+    <primary>
+      <bitgetSpot endpoint="https://api.bitget.com/api/spot/v1/market/tickers" symbols="BTCUSDT,ETHUSDT,SOLUSDT,PIUSDT"/>
+    </primary>
+  </data>
+</agent>
