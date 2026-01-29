@@ -1,5 +1,11 @@
+node_modules/
+.env
+*.log
+
+# feeds (Actions je commituje přes výjimky níž)
 out/*
 public/feed/*
+
 !out/.keep
 !public/feed/.keep
 !out/priceSnapshot.json
