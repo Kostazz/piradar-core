@@ -1,0 +1,19 @@
+{
+  "name": "piradar-core",
+  "version": "3.2.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "pm2 start ecosystem.config.cjs --update-env && pm2 save",
+    "restart": "pm2 restart ecosystem.config.cjs --update-env && pm2 save",
+    "logs": "pm2 logs",
+    "market": "node services/market-scanner/index.js",
+    "heartbeat": "node services/heartbeat/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
