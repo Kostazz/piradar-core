@@ -64,6 +64,8 @@ async function load() {
   enforceFreshness();
 }
 setInterval(enforceFreshness, 60 * 1000);
+// The feed is published every ten minutes; keep visible tabs refreshed as well as age-checked.
+setInterval(() => { if (document.visibilityState === "visible") void load(); }, 5 * 60 * 1000);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") { enforceFreshness(); void load(); }
 });
