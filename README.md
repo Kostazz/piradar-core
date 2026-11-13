@@ -49,3 +49,13 @@ The repository's **own code distributed under [MIT](LICENSE)** is available unde
 - **This repository:** public feed and experimental scanner runtime.
 - **PiRadar Earn Scout:** separate private opportunity-research and automation system. Not published here.
 - **Historical public concepts:** archived with their own histories; they are not current distributions of this runtime.
+
+## Veřejný feed a GitHub Pages: aktualizace v PR
+
+Bitget ukončil externí V1 API 28. 11. 2025. Dřívější GitHub Actions volaly `/api/spot/v1/market/tickers` a zapisovaly prázdné snapshoty při formálně úspěšném běhu. Nová verze **používá existující spot parser** pro oficiální Bitget V3 `/api/v3/market/tickers?category=SPOT` a kontroluje odpověď, čtyři cílové páry i kladné ceny.
+
+`node scripts/build-public-feed.js` vytváří po úspěchu shodný datový obsah do `out/priceSnapshot.json`, `public/feed/now.json` a `docs/feed/now.json`. Při chybě **ukončí workflow nenulovým kódem bez přepsání posledních ověřených dat**. Pole `close`/`chgUTC` jsou zachována jako kompatibilní aliasy, nový snapshot nese jednoznačný `source`, `status` a `schema_version`.
+
+`docs/index.html` je minimální experimentální veřejná stavová stránka pro stávající GitHub Pages `/docs`, ne hotová aplikace PiRadar ani soukromý dashboard. Stránka označuje snapshot za aktuální jen do 45 minut od ověřeného časového razítka a vyžaduje všechny čtyři páry. Neposkytuje investiční rady ani soukromé informace.
+
+Bez síťových přístupů: `node --test tests/public-feed.test.cjs`. Před merge jsou povinné CI, nezávislé review aktuálního commitu a výslovné schválení změn veřejného feedu a nasazení. Po merge ověřit nový skutečný Actions snapshot **i** úspěšný Pages build; samotné testy nejsou provozní přejímka.
