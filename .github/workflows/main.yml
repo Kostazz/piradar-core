@@ -7,6 +7,12 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: piradar-core-public-feed-pages
+  cancel-in-progress: false
 
 env:
   AGENT_MANIFEST_PATH: manifest/piradar_core_agent_v3.0.xml
@@ -14,6 +20,7 @@ env:
 jobs:
   heartbeat:
     runs-on: ubuntu-latest
+    environment: github-pages
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,3 +61,17 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
+      # GITHUB_TOKEN pushes do not themselves trigger a Pages rebuild.
+      # Explicit deployment uses the exact verified files from this run.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload verified public site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+
+      - name: Deploy verified public site
+        id: deployment
+        uses: actions/deploy-pages@v4

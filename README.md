@@ -59,3 +59,8 @@ Bitget ukončil externí V1 API 28. 11. 2025. Dřívější GitHub Actions volal
 `docs/index.html` je minimální experimentální veřejná stavová stránka pro stávající GitHub Pages `/docs`, ne hotová aplikace PiRadar ani soukromý dashboard. Stránka označuje snapshot za aktuální jen do 45 minut od ověřeného časového razítka a vyžaduje všechny čtyři páry. Neposkytuje investiční rady ani soukromé informace.
 
 Bez síťových přístupů: `node --test tests/public-feed.test.cjs`. Před merge jsou povinné CI, nezávislé review aktuálního commitu a výslovné schválení změn veřejného feedu a nasazení. Po merge ověřit nový skutečný Actions snapshot **i** úspěšný Pages build; samotné testy nejsou provozní přejímka.
+
+### Review hardening (2026-11-13)
+- Public Pages is explicitly deployed after each verified snapshot. GITHUB_TOKEN pushes do not trigger legacy Pages rebuilds; switch repository Pages Build and Deployment Source to GitHub Actions as part of the approved production migration, then verify actual deployment.
+- Public UI ages out the current snapshot every minute and immediately on tab visibility/focus/page restoration. Background-tab return never silently preserves an expired verified price.
+- Bitget V3 price24hPcnt means trailing 24 hours, not V1 chgUTC (change since UTC midnight). V3 lacks UTC-open. The legacy chgUTC alias is explicitly null rather than containing an incorrect metric.

@@ -18,8 +18,8 @@ function normalizeSnapshot(spot, at = new Date()) {
       const pct = Number.isFinite(row.change24hPct) ? row.change24hPct / 100 : null;
       return {
         symbol,
-        close: String(row.last), chgUTC: pct, // legacy aliases
-        lastPrice: String(row.last), price24hPcnt: pct // v3 fields
+        close: String(row.last), chgUTC: null, // V3 lacks UTC-open, not equivalent to 24h change
+        lastPrice: String(row.last), price24hPcnt: pct // v3 24h fraction
       };
     })
   };

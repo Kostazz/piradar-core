@@ -47,7 +47,7 @@ test("Snapshot preserves v1 close/chgUTC aliases with explicit new provenance", 
   const snap=normalizeSnapshot({ok:true,data},new Date("2026-11-13T21:00:00Z"));
   assert.equal(snap.source,"bitget-v3-spot");
   assert.equal(snap.status,"OK");
-  assert.equal(snap.data[0].chgUTC,0);
+  assert.equal(snap.data[0].chgUTC,null);
   assert.equal(snap.data[1].price24hPcnt,0.125);
   assert.equal(snap.data[3].symbol,"PIUSDT");
 });

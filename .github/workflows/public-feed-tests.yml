@@ -7,7 +7,7 @@ on:
       - "services/market-scanner/spot.fetch.js"
       - "services/market-scanner/index.js"
       - "scripts/build-public-feed.js"
-      - "tests/public-feed.test.cjs"
+      - "tests/*.test.cjs"
       - "docs/**"
   workflow_dispatch:
 permissions:
@@ -23,7 +23,7 @@ jobs:
           node-version-file: .nvmrc
       - name: Run isolated feed contract tests
         run: |
-          node --test tests/public-feed.test.cjs
+          node --test tests/*.test.cjs
           node --check docs/app.js
           test -f docs/index.html
           test -f docs/style.css
