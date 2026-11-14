@@ -1,0 +1,29 @@
+name: Public feed regression tests
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/main.yml"
+      - ".github/workflows/public-feed-tests.yml"
+      - "services/market-scanner/spot.fetch.js"
+      - "services/market-scanner/index.js"
+      - "scripts/build-public-feed.js"
+      - "tests/*.test.cjs"
+      - "docs/**"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Run isolated feed contract tests
+        run: |
+          node --test tests/*.test.cjs
+          node --check docs/app.js
+          test -f docs/index.html
+          test -f docs/style.css
