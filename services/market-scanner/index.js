@@ -32,10 +32,10 @@ async function tick() {
     ts: Date.now(),
     iso: iso(),
     intervalMs: INTERVAL,
-    spotSource: spot1.ok ? "bitget" : "coingecko",
+    spotSource: spot.ok ? (spot1.ok ? "bitget-v3" : "coingecko") : "unavailable",
     spotOk: !!spot.ok,
     spotReason: spot.reason,
-    symbols: spot.data || {},
+    symbols: spot.ok ? (spot.data || {}) : {},
     futures: futures || {}
   };
 
@@ -44,7 +44,7 @@ async function tick() {
   // Simple signal: extreme 24h move
   const signals = [];
   for (const s of ["BTCUSDT", "ETHUSDT", "SOLUSDT", "PIUSDT"]) {
-    const ch = spot.data?.[s]?.change24hPct;
+    const ch = spot.ok ? spot.data?.[s]?.change24hPct : null;
     if (ch != null && Math.abs(ch) >= EXTREME) {
       signals.push(`${s.replace("USDT","")}: ${fmtPct(ch)}`);
     }
